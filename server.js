@@ -1,26 +1,30 @@
 import express from "express";
-import cors from "cors";
 import nodemailer from "nodemailer";
 import dotenv from "dotenv";
+import cors from "cors";
 
 dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// ✅ FIX 1: Allow preflight OPTIONS requests
-app.options("*", cors());
+// ----------------------
+//   FIX CORS COMPLETELY
+// ----------------------
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*"); // allow all origins
+  res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+  res.header("Access-Control-Allow-Headers", "Content-Type");
+  if (req.method === "OPTIONS") {
+    return res.sendStatus(200);
+  }
+  next();
+});
 
-// ✅ FIX 2: CORS for frontend (localhost + vercel)
-app.use(cors({
-  origin: ["http://localhost:5173", "https://pranith-konda.vercel.app"],
-  methods: ["GET", "POST", "OPTIONS"],
-  allowedHeaders: ["Content-Type"],
-}));
-
-// Required for parsing JSON
 app.use(express.json());
 
-// ---- CONTACT ROUTE ----
+// ----------------------
+//      CONTACT ROUTE
+// ----------------------
 app.post("/contact", async (req, res) => {
   const { name, email, message } = req.body;
 
@@ -40,7 +44,7 @@ app.post("/contact", async (req, res) => {
     await transporter.sendMail({
       from: email,
       to: process.env.RECEIVER_EMAIL,
-      subject: "New Message from Portfolio",
+      subject: "New Portfolio Message",
       html: `
         <h3>You received a new message</h3>
         <p><strong>Name:</strong> ${name}</p>
@@ -50,14 +54,13 @@ app.post("/contact", async (req, res) => {
     });
 
     res.json({ success: true, message: "Message sent successfully!" });
-
-  } catch (err) {
-    console.error("Email Error:", err);
+  } catch (error) {
+    console.error("Email Error:", error);
     res.status(500).json({ error: "Failed to send message" });
   }
 });
 
-// Simple check route
+// ----------------------
 app.get("/", (req, res) => {
   res.send("Backend is working fine!");
 });
