@@ -7,17 +7,17 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// ✅ CORS FIX – allow your frontend (localhost + vercel domain)
+// ✅ FIX 1: Allow preflight OPTIONS requests
+app.options("*", cors());
+
+// ✅ FIX 2: CORS for frontend (localhost + vercel)
 app.use(cors({
-  origin: ["http://localhost:5173", "https://your-vercel-domain.com"],
-  methods: ["POST", "GET"],
-  allowedHeaders: ["Content-Type"]
+  origin: ["http://localhost:5173", "https://pranith-konda.vercel.app"],
+  methods: ["GET", "POST", "OPTIONS"],
+  allowedHeaders: ["Content-Type"],
 }));
 
-// OR to allow everything temporarily (works 100%)
-//
-// app.use(cors());
-
+// Required for parsing JSON
 app.use(express.json());
 
 // ---- CONTACT ROUTE ----
@@ -45,18 +45,19 @@ app.post("/contact", async (req, res) => {
         <h3>You received a new message</h3>
         <p><strong>Name:</strong> ${name}</p>
         <p><strong>Email:</strong> ${email}</p>
-        <p><strong>Message:</strong></p>
-        <p>${message}</p>
+        <p><strong>Message:</strong> ${message}</p>
       `,
     });
 
     res.json({ success: true, message: "Message sent successfully!" });
+
   } catch (err) {
     console.error("Email Error:", err);
     res.status(500).json({ error: "Failed to send message" });
   }
 });
 
+// Simple check route
 app.get("/", (req, res) => {
   res.send("Backend is working fine!");
 });
