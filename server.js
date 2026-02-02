@@ -8,17 +8,20 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // ----------------------
-//   FIX CORS COMPLETELY
+//   GLOBAL CORS FIX
 // ----------------------
-app.use((req, res, next) => {
-  res.header("Access-Control-Allow-Origin", "*"); // allow all origins
-  res.header("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-  res.header("Access-Control-Allow-Headers", "Content-Type");
-  if (req.method === "OPTIONS") {
-    return res.sendStatus(200);
-  }
-  next();
-});
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173", 
+      "https://your-frontend-domain.com" // add later
+    ],
+    methods: ["GET", "POST", "OPTIONS"],
+    allowedHeaders: ["Content-Type"],
+  })
+);
+
+app.options("*", cors()); // allow preflight
 
 app.use(express.json());
 
@@ -65,4 +68,6 @@ app.get("/", (req, res) => {
   res.send("Backend is working fine!");
 });
 
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () =>
+  console.log(`Server running on port ${PORT}`)
+);
