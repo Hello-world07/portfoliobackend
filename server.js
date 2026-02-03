@@ -12,15 +12,15 @@ const app = express();
 app.use(
   cors({
     origin: [
-      "http://localhost:5173",        // local frontend
-      "https://your-frontend-domain.com" // replace with actual domain after deploying frontend
+      "http://localhost:5173",               
+      "https://your-frontend-domain.com"      
     ],
     methods: ["GET", "POST", "OPTIONS"],
     allowedHeaders: ["Content-Type"],
   })
 );
 
-app.options("*", cors()); // IMPORTANT: allow preflight
+app.options("*", cors()); // allow preflight
 
 app.use(express.json());
 
@@ -35,11 +35,19 @@ app.post("/contact", async (req, res) => {
   }
 
   try {
+    // --------------------------------------------------
+    //  WORKING SMTP FOR GMAIL ON RENDER (IMPORTANT)
+    // --------------------------------------------------
     const transporter = nodemailer.createTransport({
-      service: "gmail",
+      host: "smtp.gmail.com",
+      port: 587,
+      secure: false,
       auth: {
         user: process.env.EMAIL_USER,
         pass: process.env.EMAIL_PASS,
+      },
+      tls: {
+        rejectUnauthorized: false,
       },
     });
 
@@ -56,8 +64,9 @@ app.post("/contact", async (req, res) => {
     });
 
     res.json({ success: true, message: "Message sent successfully!" });
+
   } catch (error) {
-    console.error("Email Error:", error);
+    console.error("Email Error:", error.message);
     res.status(500).json({ error: "Failed to send message" });
   }
 });
@@ -68,7 +77,7 @@ app.get("/", (req, res) => {
 });
 
 // --------------------------------------------------
-//  RENDER PORT FIX — MUST ONLY USE process.env.PORT
+//  RENDER PORT FIX — USE process.env.PORT ONLY
 // --------------------------------------------------
 const PORT = process.env.PORT;
 
