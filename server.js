@@ -9,7 +9,7 @@ const app = express();
 app.use(express.json());
 
 // ---------------------------------------------
-// ✅ CORS FIX (LOCAL + LIVE DOMAIN)
+// CORS (LOCAL + LIVE)
 // ---------------------------------------------
 app.use(
   cors({
@@ -23,30 +23,28 @@ app.use(
   })
 );
 
-app.options("*", cors()); // preflight
+app.options("*", cors());
 
 // ---------------------------------------------
-// ✅ RESEND EMAIL CLIENT
+// RESEND
 // ---------------------------------------------
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 // ---------------------------------------------
-// ✅ CONTACT ROUTE
+// CONTACT ROUTE
 // ---------------------------------------------
 app.post("/contact", async (req, res) => {
   try {
-    console.log("Received request body:", req.body);
-
     const { name, email, message } = req.body;
 
     if (!name || !email || !message) {
       return res.status(400).json({ error: "All fields are required" });
     }
 
-    const { data, error } = await resend.emails.send({
+    const { error } = await resend.emails.send({
       from: "Portfolio Contact <onboarding@resend.dev>",
       to: process.env.RECEIVER_EMAIL,
-      subject: "New Message from Portfolio Contact Form",
+      subject: "New Portfolio Message",
       html: `
         <h2>New Contact Message</h2>
         <p><strong>Name:</strong> ${name}</p>
@@ -60,21 +58,23 @@ app.post("/contact", async (req, res) => {
       return res.status(500).json({ error: "Email sending failed" });
     }
 
-    res.json({ success: true, message: "Message sent successfully!" });
+    return res.json({ success: true, message: "Message sent successfully!" });
   } catch (err) {
-    console.error("Server Error: ", err);
+    console.error("Server error:", err);
     res.status(500).json({ error: "Internal Server Error" });
   }
 });
 
 // ---------------------------------------------
-// TEST ROUTE
-// ---------------------------------------------
 app.get("/", (req, res) => {
-  res.send("Backend is running successfully! 🚀");
+  res.send("Backend is running! 🚀");
 });
 
 // ---------------------------------------------
-// PORT FIX FOR RENDER
+// REQUIRED FOR RENDER
 // ---------------------------------------------
-const PORT = process.en
+const PORT = process.env.PORT || 10000;
+
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`Server running on port ${PORT}`);
+});
