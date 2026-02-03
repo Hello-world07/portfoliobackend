@@ -5,29 +5,28 @@ import cors from "cors";
 
 dotenv.config();
 const app = express();
-const PORT = process.env.PORT || 5000;
 
-// ----------------------
-//   GLOBAL CORS FIX
-// ----------------------
+// --------------------------------------------------
+//  FIX CORS COMPLETELY FOR LOCAL + PRODUCTION
+// --------------------------------------------------
 app.use(
   cors({
     origin: [
-      "http://localhost:5173", 
-      "https://your-frontend-domain.com" // add later
+      "http://localhost:5173",        // local frontend
+      "https://your-frontend-domain.com" // replace with actual domain after deploying frontend
     ],
     methods: ["GET", "POST", "OPTIONS"],
     allowedHeaders: ["Content-Type"],
   })
 );
 
-app.options("*", cors()); // allow preflight
+app.options("*", cors()); // IMPORTANT: allow preflight
 
 app.use(express.json());
 
-// ----------------------
-//      CONTACT ROUTE
-// ----------------------
+// --------------------------------------------------
+//  CONTACT ROUTE
+// --------------------------------------------------
 app.post("/contact", async (req, res) => {
   const { name, email, message } = req.body;
 
@@ -63,11 +62,16 @@ app.post("/contact", async (req, res) => {
   }
 });
 
-// ----------------------
+// --------------------------------------------------
 app.get("/", (req, res) => {
   res.send("Backend is working fine!");
 });
 
-app.listen(PORT, () =>
-  console.log(`Server running on port ${PORT}`)
-);
+// --------------------------------------------------
+//  RENDER PORT FIX — MUST ONLY USE process.env.PORT
+// --------------------------------------------------
+const PORT = process.env.PORT;
+
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
